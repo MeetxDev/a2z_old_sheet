@@ -600,6 +600,14 @@
 
         function addEventListeners() {
             const container = document.getElementById('roadmap-container');
+            const toggleAllBtn = document.getElementById('toggle-all');
+
+            function updateToggleAllLabel() {
+                if (!toggleAllBtn) return;
+                const hasExpanded = container.querySelector('.collapsible.active, .sub-collapsible.active');
+                toggleAllBtn.textContent = hasExpanded ? 'Collapse all' : 'Expand all';
+            }
+
             container.addEventListener('click', function (event) {
                 const collapsible = event.target.closest('.collapsible, .sub-collapsible');
                 const statusCell = event.target.closest('.status-cell');
@@ -616,6 +624,7 @@
                             parentContent.style.maxHeight = (parentContent.scrollHeight + content.scrollHeight) + "px";
                         }
                     }
+                    updateToggleAllLabel();
                 }
 
                 if (statusCell) {
@@ -633,13 +642,12 @@
                 }
             });
 
-            const toggleAllBtn = document.getElementById('toggle-all');
             if (toggleAllBtn) {
                 toggleAllBtn.addEventListener('click', function () {
                     const allButtons = Array.from(container.querySelectorAll('.collapsible, .sub-collapsible'));
-                    const shouldExpand = allButtons.some(b => !b.classList.contains('active'));
+                    const hasExpanded = allButtons.some(b => b.classList.contains('active'));
 
-                    if (shouldExpand) {
+                    if (!hasExpanded) {
                         // Expand nested sections first so parent scrollHeights are correct.
                         const subButtons = Array.from(container.querySelectorAll('.sub-collapsible'));
                         subButtons.forEach(btn => {
@@ -660,9 +668,11 @@
                         allContents.forEach(c => c.style.maxHeight = null);
                     }
 
-                    toggleAllBtn.textContent = shouldExpand ? 'Collapse all' : 'Expand all';
+                    updateToggleAllLabel();
                 });
             }
+
+            updateToggleAllLabel();
         }
 
         function handleError(error) {
