@@ -653,14 +653,14 @@
                         subButtons.forEach(btn => {
                             btn.classList.add('active');
                             const content = btn.nextElementSibling;
-                            if (content) content.style.maxHeight = content.scrollHeight + "px";
+                            if (content) content.style.maxHeight = "none";
                         });
 
                         const mainButtons = Array.from(container.querySelectorAll('.collapsible'));
                         mainButtons.forEach(btn => {
                             btn.classList.add('active');
                             const content = btn.nextElementSibling;
-                            if (content) content.style.maxHeight = content.scrollHeight + "px";
+                            if (content) content.style.maxHeight = "none";
                         });
                     } else {
                         const allContents = Array.from(container.querySelectorAll('.content, .sub-content'));
