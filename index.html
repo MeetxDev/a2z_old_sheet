@@ -114,6 +114,42 @@
             margin-bottom: 1.5rem;
         }
 
+        .roadmap-header {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
+        .roadmap-header h1 {
+            margin-bottom: 0;
+        }
+
+        .toggle-all-btn {
+            position: absolute;
+            top: 50%;
+            right: 0;
+            transform: translateY(-50%);
+            cursor: pointer;
+            border: 1px solid var(--border-color);
+            background: var(--light-gray);
+            color: var(--text-color);
+            padding: 0.45rem 0.9rem;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+
+        .toggle-all-btn:hover {
+            background: #3a3a3a;
+        }
+
+        @media (max-width: 768px) {
+            .toggle-all-btn {
+                position: static;
+                transform: none;
+                display: block;
+                margin: 0.75rem auto 0;
+            }
+        }
+
         /* Collapsible Section Styles */
         .collapsible,
         .sub-collapsible {
@@ -409,7 +445,11 @@
 
         function generateRoadmap(data, progress) {
             const container = document.getElementById('roadmap-container');
-            let htmlContent = `<h1>A2Z DSA Course Roadmap</h1>`;
+            let htmlContent = `
+                <div class="roadmap-header">
+                    <h1>A2Z DSA Course Roadmap</h1>
+                    <button type="button" id="toggle-all" class="toggle-all-btn">Expand all</button>
+                </div>`;
             data.forEach(step => {
                 let totalStepTopics = 0;
                 let completedStepTopics = 0;
@@ -560,6 +600,14 @@
 
         function addEventListeners() {
             const container = document.getElementById('roadmap-container');
+            const toggleAllBtn = document.getElementById('toggle-all');
+
+            function updateToggleAllLabel() {
+                if (!toggleAllBtn) return;
+                const hasExpanded = container.querySelector('.collapsible.active, .sub-collapsible.active');
+                toggleAllBtn.textContent = hasExpanded ? 'Collapse all' : 'Expand all';
+            }
+
             container.addEventListener('click', function (event) {
                 const collapsible = event.target.closest('.collapsible, .sub-collapsible');
                 const statusCell = event.target.closest('.status-cell');
@@ -576,6 +624,7 @@
                             parentContent.style.maxHeight = (parentContent.scrollHeight + content.scrollHeight) + "px";
                         }
                     }
+                    updateToggleAllLabel();
                 }
 
                 if (statusCell) {
@@ -592,6 +641,38 @@
                     }
                 }
             });
+
+            if (toggleAllBtn) {
+                toggleAllBtn.addEventListener('click', function () {
+                    const allButtons = Array.from(container.querySelectorAll('.collapsible, .sub-collapsible'));
+                    const hasExpanded = allButtons.some(b => b.classList.contains('active'));
+
+                    if (!hasExpanded) {
+                        // Expand nested sections first so parent scrollHeights are correct.
+                        const subButtons = Array.from(container.querySelectorAll('.sub-collapsible'));
+                        subButtons.forEach(btn => {
+                            btn.classList.add('active');
+                            const content = btn.nextElementSibling;
+                            if (content) content.style.maxHeight = "none";
+                        });
+
+                        const mainButtons = Array.from(container.querySelectorAll('.collapsible'));
+                        mainButtons.forEach(btn => {
+                            btn.classList.add('active');
+                            const content = btn.nextElementSibling;
+                            if (content) content.style.maxHeight = "none";
+                        });
+                    } else {
+                        const allContents = Array.from(container.querySelectorAll('.content, .sub-content'));
+                        allButtons.forEach(btn => btn.classList.remove('active'));
+                        allContents.forEach(c => c.style.maxHeight = null);
+                    }
+
+                    updateToggleAllLabel();
+                });
+            }
+
+            updateToggleAllLabel();
         }
 
         function handleError(error) {
