@@ -721,8 +721,8 @@
                                                     <th title="GeeksForGeeks">GFG</th>
                                                     <th title="CodingNinjas">CN</th>
                                                     <th title="TakeUForward+">TUF</th>
-                                                    <th title="Star">⭐</th>
                                                     <th title="Notes">📝</th>
+                                                    <th title="Star">⭐</th>
                                                     <th>Done</th>
                                                 </tr>
                                             </thead>
@@ -759,13 +759,13 @@
                                                     ${createLinkCell(topic.gfg_link, 'GFG')}
                                                     ${createLinkCell(topic.cs_link, 'CN')}
                                                     ${createLinkCell(topic.plus_link, 'TUF')}
-                                                    <td class="star-cell" data-star-id="${topic.id}">
-                                                        <span class="star-icon ${isStarred ? 'starred' : ''}" data-star-id="${topic.id}">★</span>
-                                                    </td>
                                                     <td class="notes-cell" data-notes-id="${topic.id}" data-topic-title="${topic.question_title}">
                                                         <span class="notes-icon ${hasNote ? 'has-note' : 'empty'}" data-notes-id="${topic.id}">
                                                             ${hasNote ? notesFilledSVG() : notesEmptySVG()}
                                                         </span>
+                                                    </td>
+                                                    <td class="star-cell" data-star-id="${topic.id}">
+                                                        <span class="star-icon ${isStarred ? 'starred' : ''}" data-star-id="${topic.id}">★</span>
                                                     </td>
                                                     <td class="status-cell">
                                                         <input type="checkbox" class="status-checkbox" data-id="${topic.id}" ${checkedAttr}>
