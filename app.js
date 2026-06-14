@@ -190,11 +190,16 @@ function generateRoadmap(data) {
   let html = '';
 
   // ── Header ──────────────────────────────────────────────────────────────
+  const totalQ = allTopics.length;
+  const doneQ = allTopics.filter(t => !!state.progress[t.id]).length;
+
   html += `
     <header class="header">
-      <h1 class="header-title">A2Z DSA Course Roadmap</h1>
+      <div class="header-title-row">
+        <h1 class="header-title">A2Z DSA Course Roadmap</h1>
+        <span class="global-count" id="global-question-count">${doneQ} / ${totalQ}</span>
+      </div>
       <div class="header-actions">
-        <button class="btn btn-ghost" id="btn-random">🎲 Random</button>
         <button class="btn btn-ghost" id="btn-starred">⭐ Starred</button>
         <button class="btn btn-ghost" id="export-btn">${downloadIconSVG()} Export</button>
         <button class="btn btn-ghost" id="import-btn">${uploadIconSVG()} Import</button>
@@ -346,7 +351,9 @@ function countSubStepCompleted(sub) {
  * Recalculate and render the stats dashboard values.
  */
 function updateStats() {
-  // Global stats removed
+  const totalQ = allTopics.length;
+  const doneQ = allTopics.filter(t => !!state.progress[t.id]).length;
+  setText('global-question-count', `${doneQ} / ${totalQ}`);
 }
 
 /** Safe helper — set textContent by id */
@@ -898,8 +905,7 @@ function pickRandomProblem() {
 
 function setupPhase2Listeners() {
 
-  const randomBtn = document.getElementById('btn-random');
-  if (randomBtn) randomBtn.addEventListener('click', pickRandomProblem);
+  // Random button removed
 
   const fab = document.getElementById('fab-back-to-top');
   if (fab) {
