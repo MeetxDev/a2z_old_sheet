@@ -82,6 +82,16 @@ function loadState() {
   try {
     const p = localStorage.getItem(STORAGE_KEYS.progress);
     state.progress = p ? JSON.parse(p) : {};
+    
+    // Migration: convert legacy boolean 'true' to timestamp
+    let migrated = false;
+    for (const key in state.progress) {
+      if (state.progress[key] === true) {
+        state.progress[key] = Date.now();
+        migrated = true;
+      }
+    }
+    if (migrated) saveProgress();
   } catch { state.progress = {}; }
 
   try {
@@ -184,74 +194,13 @@ function generateRoadmap(data) {
     <header class="header">
       <h1 class="header-title">A2Z DSA Course Roadmap</h1>
       <div class="header-actions">
+        <button class="btn btn-ghost" id="btn-random">🎲 Random</button>
+        <button class="btn btn-ghost" id="btn-starred">⭐ Starred</button>
         <button class="btn btn-ghost" id="export-btn">${downloadIconSVG()} Export</button>
         <button class="btn btn-ghost" id="import-btn">${uploadIconSVG()} Import</button>
         <button class="btn btn-ghost" id="toggle-all">Expand All</button>
       </div>
     </header>`;
-
-  // ── Stats Dashboard ─────────────────────────────────────────────────────
-  html += `
-    <div class="stats-dashboard">
-      <div class="stat-card stat-card-total">
-        <div class="stat-value" id="stat-total-value">0</div>
-        <div class="stat-label">Total Problems</div>
-      </div>
-      <div class="stat-card stat-card-completed">
-        <div class="stat-value" id="stat-completed-value">0</div>
-        <div class="stat-label">Completed</div>
-        <div class="stat-sub" id="stat-completed-pct">0%</div>
-      </div>
-      <div class="stat-card stat-card-pending">
-        <div class="stat-value" id="stat-pending-value">0</div>
-        <div class="stat-label">Pending</div>
-      </div>
-      <div class="stat-card stat-card-starred">
-        <div class="stat-value" id="stat-starred-value">0</div>
-        <div class="stat-label">Starred</div>
-      </div>
-    </div>`;
-
-  // ── Difficulty Breakdown ────────────────────────────────────────────────
-  html += `
-    <div class="difficulty-stats">
-      <div class="difficulty-stats-title">Difficulty Breakdown</div>
-      <div class="difficulty-bar-container">
-        <div class="difficulty-bar">
-          <div class="difficulty-bar-segment easy" id="diff-bar-easy" style="width:0%"></div>
-          <div class="difficulty-bar-segment medium" id="diff-bar-medium" style="width:0%"></div>
-          <div class="difficulty-bar-segment hard" id="diff-bar-hard" style="width:0%"></div>
-        </div>
-        <div class="difficulty-legend">
-          <span class="difficulty-legend-item"><span class="difficulty-legend-dot easy"></span> Easy <span id="diff-legend-easy">0/0</span></span>
-          <span class="difficulty-legend-item"><span class="difficulty-legend-dot medium"></span> Medium <span id="diff-legend-medium">0/0</span></span>
-          <span class="difficulty-legend-item"><span class="difficulty-legend-dot hard"></span> Hard <span id="diff-legend-hard">0/0</span></span>
-        </div>
-      </div>
-    </div>`;
-
-  // ── Search & Filters ────────────────────────────────────────────────────
-  html += `
-    <div class="search-filter-bar">
-      <div class="search-wrapper">
-        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <input type="text" class="search-input" id="search-input" placeholder="Search problems... (Ctrl+K)">
-        <span class="kbd-hint">Ctrl+K</span>
-      </div>
-      <div class="filter-row">
-        <span class="filter-label">Status:</span>
-        <button class="filter-chip active" data-status="all">All</button>
-        <button class="filter-chip" data-status="pending">Pending</button>
-        <button class="filter-chip" data-status="completed">Completed</button>
-        <button class="filter-chip" data-status="starred">⭐ Starred</button>
-        <span class="filter-label" style="margin-left:0.5rem">Difficulty:</span>
-        <button class="filter-chip active" data-difficulty="all">All</button>
-        <button class="filter-chip filter-chip-easy" data-difficulty="0">Easy</button>
-        <button class="filter-chip filter-chip-medium" data-difficulty="1">Medium</button>
-        <button class="filter-chip filter-chip-hard" data-difficulty="2">Hard</button>
-        <span class="filter-results" id="filter-results"></span>
-      </div>
-    </div>`;
 
   // ── Roadmap Content ─────────────────────────────────────────────────────
   html += `<div id="roadmap-content">`;
@@ -397,48 +346,7 @@ function countSubStepCompleted(sub) {
  * Recalculate and render the stats dashboard values.
  */
 function updateStats() {
-  const total = allTopics.length;
-  let completed = 0;
-  let starred = 0;
-  const diffTotals = { 0: 0, 1: 0, 2: 0 };
-  const diffDone = { 0: 0, 1: 0, 2: 0 };
-
-  allTopics.forEach((topic) => {
-    const diff = topic.difficulty != null ? topic.difficulty : 0;
-    diffTotals[diff] = (diffTotals[diff] || 0) + 1;
-
-    if (state.progress[topic.id]) {
-      completed++;
-      diffDone[diff] = (diffDone[diff] || 0) + 1;
-    }
-    if (state.stars[topic.id]) {
-      starred++;
-    }
-  });
-
-  const pending = total - completed;
-  const pct = total > 0 ? ((completed / total) * 100).toFixed(1) : 0;
-
-  // Update stat cards
-  setText('stat-total-value', total);
-  setText('stat-completed-value', completed);
-  setText('stat-completed-pct', pct + '%');
-  setText('stat-pending-value', pending);
-  setText('stat-starred-value', starred);
-
-  // Update difficulty bar segments
-  const setBar = (id, count) => {
-    const el = document.getElementById(id);
-    if (el) el.style.width = total > 0 ? ((count / total) * 100).toFixed(2) + '%' : '0%';
-  };
-  setBar('diff-bar-easy', diffTotals[0]);
-  setBar('diff-bar-medium', diffTotals[1]);
-  setBar('diff-bar-hard', diffTotals[2]);
-
-  // Update legend text
-  setText('diff-legend-easy', `${diffDone[0]}/${diffTotals[0]}`);
-  setText('diff-legend-medium', `${diffDone[1]}/${diffTotals[1]}`);
-  setText('diff-legend-hard', `${diffDone[2]}/${diffTotals[2]}`);
+  // Global stats removed
 }
 
 /** Safe helper — set textContent by id */
@@ -507,87 +415,8 @@ function updateCounters() {
 
 // --- Filter Functions --------------------------------------------------------
 
-/**
- * Apply all active filters (search + status + difficulty) to topic rows.
- * Hides sections where all rows are hidden and shows a placeholder message.
- */
 function applyFilters() {
-  const query = filters.searchQuery.toLowerCase();
-  const statusF = filters.statusFilter;
-  const diffF = filters.difficultyFilter;
-
-  const rows = document.querySelectorAll('#roadmap-content tr[data-topic-id]');
-  let visibleCount = 0;
-  const totalCount = rows.length;
-
-  rows.forEach((row) => {
-    const title = (row.getAttribute('data-topic-title') || '').toLowerCase();
-    const diff = row.getAttribute('data-difficulty');
-    const id = row.getAttribute('data-topic-id');
-    const isCompleted = !!state.progress[id];
-    const isStarred = !!state.stars[id];
-
-    // Search match
-    const matchesSearch = !query || title.includes(query);
-
-    // Status match
-    let matchesStatus = true;
-    if (statusF === 'pending') matchesStatus = !isCompleted;
-    else if (statusF === 'completed') matchesStatus = isCompleted;
-    else if (statusF === 'starred') matchesStatus = isStarred;
-
-    // Difficulty match
-    const matchesDiff = diffF === 'all' || diff === diffF;
-
-    if (matchesSearch && matchesStatus && matchesDiff) {
-      row.classList.remove('hidden-row');
-      visibleCount++;
-    } else {
-      row.classList.add('hidden-row');
-    }
-  });
-
-  // Update results count
-  const resultsEl = document.getElementById('filter-results');
-  if (resultsEl) {
-    if (query || statusF !== 'all' || diffF !== 'all') {
-      resultsEl.textContent = `Showing ${visibleCount} of ${totalCount}`;
-    } else {
-      resultsEl.textContent = '';
-    }
-  }
-
-  // Hide/show sub-sections and add placeholder messages
-  document.querySelectorAll('.sub-content').forEach((panel) => {
-    const tbody = panel.querySelector('tbody');
-    if (!tbody) return;
-
-    const allRows = tbody.querySelectorAll('tr[data-topic-id]');
-    const visibleRows = tbody.querySelectorAll('tr[data-topic-id]:not(.hidden-row)');
-
-    // Remove existing placeholder
-    const existing = panel.querySelector('.no-results-message');
-    if (existing) existing.remove();
-
-    if (allRows.length > 0 && visibleRows.length === 0) {
-      const msg = document.createElement('div');
-      msg.className = 'no-results-message';
-      msg.textContent = 'No matching problems';
-      panel.appendChild(msg);
-    }
-  });
-
-  // Hide step sections where ALL rows are hidden
-  document.querySelectorAll('.step-section').forEach((section) => {
-    const allRows = section.querySelectorAll('tr[data-topic-id]');
-    const visibleRows = section.querySelectorAll('tr[data-topic-id]:not(.hidden-row)');
-
-    if (allRows.length > 0 && visibleRows.length === 0) {
-      section.classList.add('hidden-row');
-    } else {
-      section.classList.remove('hidden-row');
-    }
-  });
+  // Search and filter logic completely removed as per user request.
 }
 
 // --- Event Listeners ---------------------------------------------------------
@@ -661,7 +490,11 @@ function addEventListeners() {
     }
 
     const id = checkbox.getAttribute('data-id');
-    state.progress[id] = checkbox.checked;
+    if (checkbox.checked) {
+      state.progress[id] = Date.now();
+    } else {
+      delete state.progress[id];
+    }
     saveProgress();
 
     const row = checkbox.closest('tr');
@@ -705,34 +538,7 @@ function addEventListeners() {
     openNotesModal(id, topicTitle);
   });
 
-  // ── Search input ──────────────────────────────────────────────────────
-  const searchInput = document.getElementById('search-input');
-  if (searchInput) {
-    searchInput.addEventListener('input', () => {
-      filters.searchQuery = searchInput.value.trim();
-      applyFilters();
-    });
-  }
-
-  // ── Status filter chips ───────────────────────────────────────────────
-  container.querySelectorAll('.filter-chip[data-status]').forEach((chip) => {
-    chip.addEventListener('click', () => {
-      container.querySelectorAll('.filter-chip[data-status]').forEach((c) => c.classList.remove('active'));
-      chip.classList.add('active');
-      filters.statusFilter = chip.getAttribute('data-status');
-      applyFilters();
-    });
-  });
-
-  // ── Difficulty filter chips ───────────────────────────────────────────
-  container.querySelectorAll('.filter-chip[data-difficulty]').forEach((chip) => {
-    chip.addEventListener('click', () => {
-      container.querySelectorAll('.filter-chip[data-difficulty]').forEach((c) => c.classList.remove('active'));
-      chip.classList.add('active');
-      filters.difficultyFilter = chip.getAttribute('data-difficulty');
-      applyFilters();
-    });
-  });
+  // ── Search & Filter listeners removed ─────────────────────────────────
 
   // ── Toggle all ────────────────────────────────────────────────────────
   const toggleAllBtn = document.getElementById('toggle-all');
@@ -816,9 +622,16 @@ function openNotesModal(topicId, topicTitle) {
   const saveBtn = document.getElementById('notes-modal-save');
   const deleteBtn = document.getElementById('notes-modal-delete');
   const cancelBtn = document.getElementById('notes-modal-cancel');
+  const previewBtn = document.getElementById('notes-modal-preview-btn');
+  const previewDiv = document.getElementById('notes-modal-preview');
 
   if (titleEl) titleEl.textContent = topicTitle;
   if (textarea) textarea.value = state.notes[topicId] || '';
+
+  // Reset to edit mode
+  if (textarea) textarea.classList.remove('hidden');
+  if (previewDiv) previewDiv.classList.add('hidden');
+  if (previewBtn) previewBtn.textContent = 'Preview';
 
   modal.classList.add('visible');
   if (textarea) textarea.focus();
@@ -854,6 +667,23 @@ function openNotesModal(topicId, topicTitle) {
   if (saveBtn) saveBtn.addEventListener('click', saveNote, { signal });
   if (deleteBtn) deleteBtn.addEventListener('click', deleteNote, { signal });
   if (cancelBtn) cancelBtn.addEventListener('click', closeModal, { signal });
+  if (previewBtn) previewBtn.addEventListener('click', () => {
+    if (textarea.classList.contains('hidden')) {
+      textarea.classList.remove('hidden');
+      previewDiv.classList.add('hidden');
+      previewBtn.textContent = 'Preview';
+      textarea.focus();
+    } else {
+      textarea.classList.add('hidden');
+      previewDiv.classList.remove('hidden');
+      previewBtn.textContent = 'Edit';
+      if (typeof parseMarkdown === 'function') {
+        previewDiv.innerHTML = parseMarkdown(textarea.value);
+      } else {
+        previewDiv.textContent = textarea.value;
+      }
+    }
+  }, { signal });
 
   // Close on backdrop click
   modal.addEventListener('click', (e) => {
@@ -953,31 +783,265 @@ function importProgress(e) {
 
 function addKeyboardShortcuts() {
   document.addEventListener('keydown', (e) => {
-    // Ctrl+K / Cmd+K — focus search
+    // Modal active checks (don't trigger shortcuts if user is typing in a modal)
+    if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') return;
+    const notesOverlay = document.getElementById('notes-modal-overlay');
+    if (notesOverlay && notesOverlay.classList.contains('visible')) return;
+    const cmdOverlay = document.getElementById('cmd-palette-overlay');
+    if (cmdOverlay && cmdOverlay.classList.contains('visible')) return;
+    const starredOverlay = document.getElementById('starred-modal-overlay');
+    if (starredOverlay && starredOverlay.classList.contains('visible')) return;
+
+    // Power User Keyboard Navigation
+    const highlightClass = 'highlight-row';
+    const currentHighlight = document.querySelector('.' + highlightClass);
+    
+    if (e.key === 'j' || e.key === 'ArrowDown') {
+      e.preventDefault();
+      const rows = Array.from(document.querySelectorAll('tr[data-topic-id]:not(.hidden-row)'));
+      if (!rows.length) return;
+      if (!currentHighlight) {
+        rows[0].classList.add(highlightClass);
+        rows[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+      } else {
+        const idx = rows.indexOf(currentHighlight);
+        if (idx >= 0 && idx < rows.length - 1) {
+          currentHighlight.classList.remove(highlightClass);
+          rows[idx + 1].classList.add(highlightClass);
+          rows[idx + 1].scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }
+    } else if (e.key === 'k' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      const rows = Array.from(document.querySelectorAll('tr[data-topic-id]:not(.hidden-row)'));
+      if (!rows.length) return;
+      if (!currentHighlight) {
+        rows[rows.length - 1].classList.add(highlightClass);
+        rows[rows.length - 1].scrollIntoView({ behavior: 'smooth', block: 'center' });
+      } else {
+        const idx = rows.indexOf(currentHighlight);
+        if (idx > 0) {
+          currentHighlight.classList.remove(highlightClass);
+          rows[idx - 1].classList.add(highlightClass);
+          rows[idx - 1].scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }
+    } else if (e.key === ' ' && currentHighlight) {
+      e.preventDefault();
+      const cb = currentHighlight.querySelector('.status-checkbox');
+      if (cb) cb.click();
+    } else if (e.key.toLowerCase() === 's' && currentHighlight) {
+      e.preventDefault();
+      const star = currentHighlight.querySelector('.star-cell');
+      if (star) star.click();
+    } else if ((e.key.toLowerCase() === 'n' || e.key === 'Enter') && currentHighlight) {
+      e.preventDefault();
+      const note = currentHighlight.querySelector('.notes-cell');
+      if (note) note.click();
+    }
+  });
+}
+
+// --- Phase 2 Logic (Heatmap, PWA, Commands, Markdown) ------------------------
+
+function parseMarkdown(text) {
+  if (!text) return '';
+  let html = escapeHtml(text);
+  // Basic markdown: **bold**, *italic*, `code`, \n -> <br>
+  html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+  html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
+  html = html.replace(/`(.*?)`/g, '<code>$1</code>');
+  html = html.replace(/\n/g, '<br>');
+  // Also simple links: [text](url)
+  html = html.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank">$1</a>');
+  return html;
+}
+
+
+
+
+function jumpToTopic(topicId) {
+  const row = document.querySelector(`tr[data-topic-id="${CSS.escape(topicId)}"]`);
+  if (!row) return;
+
+  const stepPanel = row.closest('.content');
+  const subPanel = row.closest('.sub-content');
+  
+  if (stepPanel) {
+    const btnId = stepPanel.id;
+    const btn = document.querySelector(`.collapsible[aria-controls="${btnId}"]`);
+    if (btn && btn.getAttribute('aria-expanded') !== 'true') btn.click();
+  }
+  
+  if (subPanel) {
+    const btnId = subPanel.id;
+    const btn = document.querySelector(`.sub-collapsible[aria-controls="${btnId}"]`);
+    if (btn && btn.getAttribute('aria-expanded') !== 'true') btn.click();
+  }
+
+  row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  row.classList.remove('highlight-row');
+  void row.offsetWidth; // reflow
+  row.classList.add('highlight-row');
+}
+
+
+function pickRandomProblem() {
+  const pending = allTopics.filter(t => !state.progress[t.id]);
+  if (pending.length === 0) {
+    alert("You've completed all problems! 🎉");
+    return;
+  }
+  const randomTopic = pending[Math.floor(Math.random() * pending.length)];
+  jumpToTopic(randomTopic.id);
+}
+
+function setupPhase2Listeners() {
+
+  const randomBtn = document.getElementById('btn-random');
+  if (randomBtn) randomBtn.addEventListener('click', pickRandomProblem);
+
+  const fab = document.getElementById('fab-back-to-top');
+  if (fab) {
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 300) fab.classList.remove('hidden');
+      else fab.classList.add('hidden');
+    });
+    fab.addEventListener('click', () => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  }
+
+  // Starred Modal
+  const starredBtn = document.getElementById('btn-starred');
+  const starredOverlay = document.getElementById('starred-modal-overlay');
+  const starredClose = document.getElementById('starred-modal-close');
+  const starredResults = document.getElementById('starred-palette-results');
+
+  function openStarred() {
+    if (!starredOverlay || !starredResults) return;
+    starredResults.innerHTML = '';
+    
+    const starredTopics = allTopics.filter(t => state.stars[t.id]);
+    
+    if (starredTopics.length === 0) {
+      starredResults.innerHTML = '<div style="padding:2rem; text-align:center; color:var(--text-muted)">No starred problems yet.</div>';
+    } else {
+      starredTopics.forEach((match) => {
+        const item = document.createElement('div');
+        item.className = 'cmd-palette-item';
+        const diffLabel = getDifficultyLabel(match.difficulty != null ? match.difficulty : 0);
+        item.innerHTML = `
+          <div class="cmd-palette-item-title">
+            <span>${escapeHtml(match.question_title)}</span>
+            <span style="font-size:0.75rem; color:var(--text-muted)">${diffLabel}</span>
+          </div>
+        `;
+        item.addEventListener('click', () => {
+          starredOverlay.classList.remove('visible');
+          jumpToTopic(match.id);
+        });
+        starredResults.appendChild(item);
+      });
+    }
+    starredOverlay.classList.add('visible');
+  }
+
+  if (starredBtn) starredBtn.addEventListener('click', openStarred);
+  if (starredClose) starredClose.addEventListener('click', () => starredOverlay.classList.remove('visible'));
+  if (starredOverlay) {
+    starredOverlay.addEventListener('click', (e) => {
+      if (e.target === starredOverlay) starredOverlay.classList.remove('visible');
+    });
+  }
+
+
+  const cmdOverlay = document.getElementById('cmd-palette-overlay');
+  const cmdInput = document.getElementById('cmd-palette-input');
+  const cmdResults = document.getElementById('cmd-palette-results');
+  let cmdActiveIndex = -1;
+  let cmdMatches = [];
+
+  function closeCmd() {
+    if (cmdOverlay) cmdOverlay.classList.remove('visible');
+    cmdActiveIndex = -1;
+  }
+
+  function renderCmdResults() {
+    if (!cmdResults) return;
+    cmdResults.innerHTML = '';
+    cmdMatches.slice(0, 20).forEach((match, idx) => {
+      const item = document.createElement('div');
+      item.className = 'cmd-palette-item' + (idx === cmdActiveIndex ? ' active' : '');
+      const diffLabel = getDifficultyLabel(match.difficulty != null ? match.difficulty : 0);
+      item.innerHTML = `
+        <div class="cmd-palette-item-title">
+          <span>${escapeHtml(match.question_title)}</span>
+          <span style="font-size:0.75rem; color:var(--text-muted)">${diffLabel}</span>
+        </div>
+      `;
+      item.addEventListener('click', () => {
+        closeCmd();
+        jumpToTopic(match.id);
+      });
+      cmdResults.appendChild(item);
+    });
+    if (cmdActiveIndex >= 0) {
+      const activeEl = cmdResults.children[cmdActiveIndex];
+      if (activeEl) activeEl.scrollIntoView({ block: 'nearest' });
+    }
+  }
+
+  document.addEventListener('keydown', (e) => {
+    // Command Palette shortcut
     if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
       e.preventDefault();
-      const searchInput = document.getElementById('search-input');
-      if (searchInput) searchInput.focus();
-      return;
-    }
-
-    // Escape — close modal or blur search
-    if (e.key === 'Escape') {
-      const modal = document.getElementById('notes-modal-overlay');
-      if (modal && modal.classList.contains('visible')) {
-        // Modal close is handled by the modal's own listener
-        return;
-      }
-
-      const searchInput = document.getElementById('search-input');
-      if (searchInput && document.activeElement === searchInput) {
-        searchInput.blur();
-        filters.searchQuery = '';
-        searchInput.value = '';
-        applyFilters();
+      if (cmdOverlay) {
+        cmdOverlay.classList.add('visible');
+        if (cmdInput) {
+          cmdInput.value = '';
+          cmdMatches = allTopics;
+          cmdActiveIndex = -1;
+          renderCmdResults();
+          cmdInput.focus();
+        }
       }
     }
   });
+
+  if (cmdInput) {
+    cmdInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeCmd();
+      else if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        cmdActiveIndex = Math.min(cmdActiveIndex + 1, Math.min(cmdMatches.length - 1, 19));
+        renderCmdResults();
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        cmdActiveIndex = Math.max(cmdActiveIndex - 1, 0);
+        renderCmdResults();
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        if (cmdActiveIndex >= 0 && cmdActiveIndex < cmdMatches.length) {
+          closeCmd();
+          jumpToTopic(cmdMatches[cmdActiveIndex].id);
+        }
+      }
+    });
+
+    cmdInput.addEventListener('input', () => {
+      const q = cmdInput.value.toLowerCase();
+      cmdMatches = allTopics.filter(t => t.question_title.toLowerCase().includes(q));
+      cmdActiveIndex = cmdMatches.length > 0 ? 0 : -1;
+      renderCmdResults();
+    });
+  }
+
+  if (cmdOverlay) {
+    cmdOverlay.addEventListener('click', (e) => {
+      if (e.target === cmdOverlay) closeCmd();
+    });
+  }
 }
 
 // --- Initialization ----------------------------------------------------------
@@ -985,6 +1049,17 @@ function addKeyboardShortcuts() {
 document.addEventListener('DOMContentLoaded', () => {
   // Load persisted state into memory
   loadState();
+
+  // Load theme
+  const savedTheme = localStorage.getItem('theme');
+  if (savedTheme) {
+    document.documentElement.setAttribute('data-theme', savedTheme);
+  }
+
+  // Register SW
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW registration failed:', err));
+  }
 
   // Fetch and render the roadmap
   fetch('./a2z.json')
@@ -998,6 +1073,7 @@ document.addEventListener('DOMContentLoaded', () => {
       addEventListeners();
       addKeyboardShortcuts();
       applyFilters();
+      if (typeof setupPhase2Listeners === 'function') setupPhase2Listeners();
     })
     .catch((err) => {
       console.error('Failed to load roadmap data:', err);

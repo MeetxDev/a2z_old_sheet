@@ -10,6 +10,9 @@
     <title>A2Z DSA Course Roadmap</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0f0f1a">
+    <link rel="apple-touch-icon" href="assets/icons/icon-192x192.png">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
@@ -27,9 +30,13 @@
         <div class="modal">
             <div class="modal-header">
                 <h3 id="notes-modal-title">Notes</h3>
-                <button type="button" class="modal-close" id="notes-modal-close" aria-label="Close notes">&times;</button>
+                <div style="display:flex; gap:0.5rem">
+                    <button type="button" class="btn btn-ghost" id="notes-modal-preview-btn" style="padding:0.25rem 0.5rem; font-size:0.75rem;">Preview</button>
+                    <button type="button" class="modal-close" id="notes-modal-close" aria-label="Close notes">&times;</button>
+                </div>
             </div>
-            <textarea id="notes-modal-textarea" placeholder="Write your notes here..." aria-label="Notes content"></textarea>
+            <textarea id="notes-modal-textarea" placeholder="Write your notes here... (Markdown supported)" aria-label="Notes content"></textarea>
+            <div id="notes-modal-preview" class="notes-preview hidden"></div>
             <div class="modal-actions">
                 <button type="button" class="btn btn-danger" id="notes-modal-delete">Delete</button>
                 <button type="button" class="btn btn-ghost" id="notes-modal-cancel">Cancel</button>
@@ -37,6 +44,42 @@
             </div>
         </div>
     </div>
+
+    <!-- Command Palette Modal -->
+    <div class="modal-overlay" id="cmd-palette-overlay" role="dialog" aria-modal="true" aria-labelledby="cmd-palette-title">
+        <div class="cmd-palette">
+            <div class="cmd-palette-header">
+                <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input type="text" id="cmd-palette-input" placeholder="Search problems, topics, or jump to... (Esc to close)" autocomplete="off">
+            </div>
+            <div class="cmd-palette-results" id="cmd-palette-results">
+                <!-- Results injected here -->
+            </div>
+            <div class="cmd-palette-footer">
+                <span><kbd>↑</kbd><kbd>↓</kbd> to navigate</span>
+                <span><kbd>Enter</kbd> to select</span>
+                <span><kbd>Esc</kbd> to close</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Starred Problems Modal -->
+    <div class="modal-overlay" id="starred-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="starred-modal-title">
+        <div class="cmd-palette">
+            <div class="cmd-palette-header" style="justify-content: space-between;">
+                <h3 id="starred-modal-title" style="margin: 0; font-size: 1.1rem; color: var(--text-primary); font-weight: 600;">⭐ Starred Problems</h3>
+                <button type="button" class="modal-close" id="starred-modal-close" aria-label="Close notes">&times;</button>
+            </div>
+            <div class="cmd-palette-results" id="starred-palette-results">
+                <!-- Results injected here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Action Button (Back to Top) -->
+    <button id="fab-back-to-top" class="fab hidden" aria-label="Back to Top">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+    </button>
 
     <!-- Hidden file input for import -->
     <input type="file" id="import-file-input" accept=".json" hidden aria-hidden="true">
