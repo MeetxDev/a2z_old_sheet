@@ -411,6 +411,227 @@
         .status-checkbox:checked::before {
             transform: scale(1);
         }
+
+        /* --- Star Column Styles --- */
+        .star-cell {
+            cursor: pointer;
+            user-select: none;
+            transition: background-color 0.2s ease;
+        }
+
+        .star-cell:hover {
+            background-color: var(--light-gray);
+        }
+
+        .star-icon {
+            font-size: 1.35rem;
+            line-height: 1;
+            transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.2s ease, filter 0.2s ease;
+            display: inline-block;
+            color: #555;
+            filter: grayscale(1);
+        }
+
+        .star-icon.starred {
+            color: #f5a623;
+            filter: grayscale(0) drop-shadow(0 0 4px rgba(245, 166, 35, 0.45));
+            transform: scale(1.2);
+        }
+
+        .star-icon:active {
+            transform: scale(0.85);
+        }
+
+        /* --- Notes Column Styles --- */
+        .notes-cell {
+            cursor: pointer;
+            user-select: none;
+            transition: background-color 0.2s ease;
+        }
+
+        .notes-cell:hover {
+            background-color: var(--light-gray);
+        }
+
+        .notes-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 26px;
+            height: 26px;
+            border-radius: 6px;
+            transition: background-color 0.2s ease, transform 0.2s ease;
+        }
+
+        .notes-icon svg {
+            width: 20px;
+            height: 20px;
+            transition: fill 0.2s ease;
+        }
+
+        .notes-icon.empty svg {
+            fill: #666;
+        }
+
+        .notes-icon.has-note svg {
+            fill: #8ea1e9;
+            filter: drop-shadow(0 0 3px rgba(142, 161, 233, 0.4));
+        }
+
+        .notes-icon:hover {
+            transform: scale(1.15);
+        }
+
+        /* --- Notes Modal Styles --- */
+        .notes-modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .notes-modal-overlay.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .notes-modal {
+            background: #2a2a2e;
+            border: 1px solid #4a4a55;
+            border-radius: 16px;
+            padding: 1.75rem;
+            width: min(480px, 90vw);
+            max-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05);
+            transform: translateY(20px) scale(0.97);
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .notes-modal-overlay.visible .notes-modal {
+            transform: translateY(0) scale(1);
+        }
+
+        .notes-modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid #4a4a55;
+        }
+
+        .notes-modal-header h3 {
+            margin: 0;
+            font-size: 1.1rem;
+            color: var(--text-color);
+            font-weight: 600;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 85%;
+        }
+
+        .notes-modal-close {
+            background: none;
+            border: none;
+            color: #999;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.2rem;
+            line-height: 1;
+            border-radius: 6px;
+            transition: color 0.2s ease, background-color 0.2s ease;
+        }
+
+        .notes-modal-close:hover {
+            color: #fff;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .notes-modal textarea {
+            width: 100%;
+            min-height: 150px;
+            max-height: 50vh;
+            resize: vertical;
+            background: #1e1e22;
+            border: 1px solid #4a4a55;
+            border-radius: 10px;
+            color: var(--dark-gray);
+            padding: 0.85rem;
+            font-family: inherit;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            outline: none;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+            box-sizing: border-box;
+        }
+
+        .notes-modal textarea:focus {
+            border-color: #8ea1e9;
+            box-shadow: 0 0 0 3px rgba(142, 161, 233, 0.15);
+        }
+
+        .notes-modal textarea::placeholder {
+            color: #666;
+        }
+
+        .notes-modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.6rem;
+            margin-top: 1rem;
+        }
+
+        .notes-btn {
+            padding: 0.5rem 1.2rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: background-color 0.2s ease, transform 0.1s ease;
+        }
+
+        .notes-btn:active {
+            transform: scale(0.97);
+        }
+
+        .notes-btn-save {
+            background: #8ea1e9;
+            color: #1a1a1e;
+        }
+
+        .notes-btn-save:hover {
+            background: #a3b4f0;
+        }
+
+        .notes-btn-delete {
+            background: rgba(229, 45, 39, 0.15);
+            color: #e55;
+        }
+
+        .notes-btn-delete:hover {
+            background: rgba(229, 45, 39, 0.25);
+        }
+
+        .notes-btn-cancel {
+            background: #3a3a40;
+            color: #ccc;
+        }
+
+        .notes-btn-cancel:hover {
+            background: #45454d;
+        }
     </style>
 </head>
 
@@ -418,8 +639,26 @@
     <div id="roadmap-container" class="container">
         <h1>Loading Roadmap...</h1>
     </div>
+    <!-- Notes Modal -->
+    <div class="notes-modal-overlay" id="notes-modal-overlay">
+        <div class="notes-modal">
+            <div class="notes-modal-header">
+                <h3 id="notes-modal-title">Notes</h3>
+                <button type="button" class="notes-modal-close" id="notes-modal-close">&times;</button>
+            </div>
+            <textarea id="notes-modal-textarea" placeholder="Write your notes here..."></textarea>
+            <div class="notes-modal-actions">
+                <button type="button" class="notes-btn notes-btn-delete" id="notes-modal-delete">Delete</button>
+                <button type="button" class="notes-btn notes-btn-cancel" id="notes-modal-cancel">Cancel</button>
+                <button type="button" class="notes-btn notes-btn-save" id="notes-modal-save">Save</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         const STORAGE_KEY = 'dsaRoadmapProgress';
+        const NOTES_STORAGE_KEY = 'dsaRoadmapNotes';
+        const STARS_STORAGE_KEY = 'dsaRoadmapStars';
 
         const platformLogos = {
             'BLOG': `<img src="./assets/logo/post.svg" alt="BLOG">`,
@@ -482,15 +721,21 @@
                                                     <th title="GeeksForGeeks">GFG</th>
                                                     <th title="CodingNinjas">CN</th>
                                                     <th title="TakeUForward+">TUF</th>
+                                                    <th title="Star">⭐</th>
+                                                    <th title="Notes">📝</th>
                                                     <th>Done</th>
                                                 </tr>
                                             </thead>
                                             <tbody>`;
+                        const notes = loadNotes();
+                        const stars = loadStars();
                         subStep.topics.forEach(topic => {
                             const isCompleted = progress[topic.id] || false;
                             const difficultyClass = getDifficultyClass(topic.difficulty);
                             const completedClass = isCompleted ? 'completed' : '';
                             const checkedAttr = isCompleted ? 'checked' : '';
+                            const isStarred = stars[topic.id] || false;
+                            const hasNote = !!(notes[topic.id] && notes[topic.id].trim());
 
                             let tags = '';
                             if (topic.ques_topic) {
@@ -514,6 +759,14 @@
                                                     ${createLinkCell(topic.gfg_link, 'GFG')}
                                                     ${createLinkCell(topic.cs_link, 'CN')}
                                                     ${createLinkCell(topic.plus_link, 'TUF')}
+                                                    <td class="star-cell" data-star-id="${topic.id}">
+                                                        <span class="star-icon ${isStarred ? 'starred' : ''}" data-star-id="${topic.id}">★</span>
+                                                    </td>
+                                                    <td class="notes-cell" data-notes-id="${topic.id}" data-topic-title="${topic.question_title}">
+                                                        <span class="notes-icon ${hasNote ? 'has-note' : 'empty'}" data-notes-id="${topic.id}">
+                                                            ${hasNote ? notesFilledSVG() : notesEmptySVG()}
+                                                        </span>
+                                                    </td>
                                                     <td class="status-cell">
                                                         <input type="checkbox" class="status-checkbox" data-id="${topic.id}" ${checkedAttr}>
                                                     </td>
@@ -550,6 +803,53 @@
 
         function getDifficultyClass(difficulty) {
             return ['difficulty-easy', 'difficulty-medium', 'difficulty-hard'][difficulty] || '';
+        }
+
+        // --- Notes SVG Icons ---
+        function notesEmptySVG() {
+            return `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zM6 20V4h7v5h5v11H6z"/><line x1="8" y1="13" x2="16" y2="13" stroke="currentColor" stroke-width="1.5" fill="none"/><line x1="12" y1="9.5" x2="12" y2="16.5" stroke="currentColor" stroke-width="1.5" fill="none"/></svg>`;
+        }
+
+        function notesFilledSVG() {
+            return `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zM6 20V4h7v5h5v11H6z"/><line x1="8" y1="10" x2="16" y2="10" stroke="currentColor" stroke-width="1.5" fill="none"/><line x1="8" y1="13.5" x2="16" y2="13.5" stroke="currentColor" stroke-width="1.5" fill="none"/><line x1="8" y1="17" x2="13" y2="17" stroke="currentColor" stroke-width="1.5" fill="none"/></svg>`;
+        }
+
+        // --- Star State ---
+        function loadStars() {
+            try {
+                const saved = localStorage.getItem(STARS_STORAGE_KEY);
+                return saved ? JSON.parse(saved) : {};
+            } catch (e) {
+                console.error('Failed to load stars from localStorage', e);
+                return {};
+            }
+        }
+
+        function saveStars(stars) {
+            try {
+                localStorage.setItem(STARS_STORAGE_KEY, JSON.stringify(stars));
+            } catch (e) {
+                console.error('Failed to save stars to localStorage', e);
+            }
+        }
+
+        // --- Notes State ---
+        function loadNotes() {
+            try {
+                const saved = localStorage.getItem(NOTES_STORAGE_KEY);
+                return saved ? JSON.parse(saved) : {};
+            } catch (e) {
+                console.error('Failed to load notes from localStorage', e);
+                return {};
+            }
+        }
+
+        function saveNotes(notes) {
+            try {
+                localStorage.setItem(NOTES_STORAGE_KEY, JSON.stringify(notes));
+            } catch (e) {
+                console.error('Failed to save notes to localStorage', e);
+            }
         }
 
         function loadCompletionState() {
@@ -608,9 +908,79 @@
                 toggleAllBtn.textContent = hasExpanded ? 'Collapse all' : 'Expand all';
             }
 
+            // --- Notes Modal Logic ---
+            const notesOverlay = document.getElementById('notes-modal-overlay');
+            const notesTextarea = document.getElementById('notes-modal-textarea');
+            const notesTitle = document.getElementById('notes-modal-title');
+            const notesSaveBtn = document.getElementById('notes-modal-save');
+            const notesCancelBtn = document.getElementById('notes-modal-cancel');
+            const notesDeleteBtn = document.getElementById('notes-modal-delete');
+            const notesCloseBtn = document.getElementById('notes-modal-close');
+            let currentNotesTopicId = null;
+
+            function openNotesModal(topicId, title) {
+                currentNotesTopicId = topicId;
+                const notes = loadNotes();
+                notesTextarea.value = notes[topicId] || '';
+                notesTitle.textContent = title || 'Notes';
+                notesOverlay.classList.add('visible');
+                setTimeout(() => notesTextarea.focus(), 150);
+            }
+
+            function closeNotesModal() {
+                notesOverlay.classList.remove('visible');
+                currentNotesTopicId = null;
+            }
+
+            function saveCurrentNote() {
+                if (currentNotesTopicId === null) return;
+                const notes = loadNotes();
+                const text = notesTextarea.value.trim();
+                if (text) {
+                    notes[currentNotesTopicId] = text;
+                } else {
+                    delete notes[currentNotesTopicId];
+                }
+                saveNotes(notes);
+                updateNoteIcon(currentNotesTopicId, !!text);
+                closeNotesModal();
+            }
+
+            function deleteCurrentNote() {
+                if (currentNotesTopicId === null) return;
+                const notes = loadNotes();
+                delete notes[currentNotesTopicId];
+                saveNotes(notes);
+                updateNoteIcon(currentNotesTopicId, false);
+                closeNotesModal();
+            }
+
+            function updateNoteIcon(topicId, hasNote) {
+                const icon = container.querySelector(`.notes-icon[data-notes-id="${topicId}"]`);
+                if (icon) {
+                    icon.classList.toggle('has-note', hasNote);
+                    icon.classList.toggle('empty', !hasNote);
+                    icon.innerHTML = hasNote ? notesFilledSVG() : notesEmptySVG();
+                }
+            }
+
+            notesSaveBtn.addEventListener('click', saveCurrentNote);
+            notesCancelBtn.addEventListener('click', closeNotesModal);
+            notesCloseBtn.addEventListener('click', closeNotesModal);
+            notesDeleteBtn.addEventListener('click', deleteCurrentNote);
+            notesOverlay.addEventListener('click', (e) => {
+                if (e.target === notesOverlay) closeNotesModal();
+            });
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && notesOverlay.classList.contains('visible')) closeNotesModal();
+                if ((e.ctrlKey || e.metaKey) && e.key === 'Enter' && notesOverlay.classList.contains('visible')) saveCurrentNote();
+            });
+
             container.addEventListener('click', function (event) {
                 const collapsible = event.target.closest('.collapsible, .sub-collapsible');
                 const statusCell = event.target.closest('.status-cell');
+                const starCell = event.target.closest('.star-cell');
+                const notesCell = event.target.closest('.notes-cell');
 
                 if (collapsible) {
                     collapsible.classList.toggle('active');
@@ -625,6 +995,32 @@
                         }
                     }
                     updateToggleAllLabel();
+                }
+
+                // --- Star Toggle ---
+                if (starCell) {
+                    const topicId = starCell.dataset.starId;
+                    const icon = starCell.querySelector('.star-icon');
+                    if (topicId && icon) {
+                        const stars = loadStars();
+                        const isNowStarred = !stars[topicId];
+                        if (isNowStarred) {
+                            stars[topicId] = true;
+                        } else {
+                            delete stars[topicId];
+                        }
+                        saveStars(stars);
+                        icon.classList.toggle('starred', isNowStarred);
+                    }
+                }
+
+                // --- Notes Open ---
+                if (notesCell) {
+                    const topicId = notesCell.dataset.notesId;
+                    const topicTitle = notesCell.dataset.topicTitle || 'Notes';
+                    if (topicId) {
+                        openNotesModal(topicId, topicTitle);
+                    }
                 }
 
                 if (statusCell) {
